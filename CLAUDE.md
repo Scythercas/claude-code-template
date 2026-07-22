@@ -32,10 +32,7 @@
 
 **ライブラリを新規追加する前に、必ず人間に確認すること。** 無断で依存を増やさない。
 
-> `npm create vite@latest` の最新版は既定で `oxlint` を Lint に使う。本プロジェクトは
-> ESLint + Prettier を採用するため、雛形作成直後に `oxlint` を外し ESLint 一式
-> （`eslint` / `typescript-eslint` / `eslint-plugin-react-hooks` /
-> `eslint-plugin-react-refresh` / `eslint-config-prettier` 等）に置き換えること。
+> 雛形作成直後の `oxlint` → ESLint 置き換え手順は `docs/SETUP.md` 参照。
 
 ---
 
@@ -49,10 +46,8 @@
   GitHub Pages は区別する。`import './Header'` と `header.tsx` の不一致は
   ローカルで通り本番で 404 になる典型事故。ファイル名とimportパスは常に完全一致させる。
 - 長いパスで失敗する場合は `git config --global core.longpaths true`。
-- **Git Bash で `/` 始まりの環境変数を直接 export しない。** MSYS2 のパス自動変換により
-  `VITE_BASE_PATH=/my-repo/` のような値が `C:/Program Files/Git/my-repo/` 等に
-  化ける。`VITE_BASE_PATH` を指定してローカルでビルドを再現する場合は
-  **PowerShell を使う**（GitHub Actions は Linux のため本番には影響しない）。
+- **`VITE_BASE_PATH` 等 `/` 始まりの環境変数は Git Bash で export しない。**
+  PowerShell を使う（MSYS2 のパス変換で値が壊れる。詳細は `docs/SETUP.md` §7）。
 
 ---
 
@@ -112,9 +107,7 @@ git merge --no-ff feature/user_login_form
 | `feature/*` 等の作業ブランチ | `ci.yml` のみ | 当該ブランチ | **公開しない** | — |
 | Pull Request | `ci.yml` のみ | 当該ブランチ | **公開しない** | — |
 
-> GitHub Pages は 1 リポジトリ 1 サイトのため、`main` / `develop` どちらの push でも
-> 両方をビルドしてサイト全体を組み立て直す（A案：パス分離）。片方だけデプロイすると
-> もう片方が消えるため、**この方式を崩さないこと**。
+> **この方式（A案：パス分離）を崩さないこと。** 理由は `deploy.yml` 冒頭コメント参照。
 
 ### 重要な設定
 
@@ -191,9 +184,8 @@ git merge --no-ff feature/user_login_form
 | 環境変数 | GitHub Actions Variables `PROD_*` | 同 `DEV_*` |
 | Auth ストレージキー | `sb-production-auth` | `sb-development-auth` |
 
-> 同一オリジン（同じ `github.io` ドメイン）で公開されるため localStorage が共有される。
-> Supabase クライアント生成時に `auth.storageKey` を環境ごとに変えないと、
-> 本番と検証でセッションが衝突する。実装例は `docs/SETUP.md` 参照。
+> 同一オリジンで localStorage を共有するため、`auth.storageKey` を分けないと
+> 本番と検証でセッションが衝突する。実装例は `docs/SETUP.md` §8 参照。
 
 ---
 
