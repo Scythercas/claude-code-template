@@ -1,0 +1,22 @@
+# Windows で開発するため、改行コードをリポジトリ側で LF に強制する。
+# これが無いと差分がファイル全体になり、レビューが機能しなくなる。
+* text=auto eol=lf
+
+# Windows 専用スクリプトのみ CRLF
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+
+# バイナリ
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.ico  binary
+*.woff binary
+*.woff2 binary
+*.pdf  binary
+
+# 差分ノイズを減らす
+package-lock.json -diff

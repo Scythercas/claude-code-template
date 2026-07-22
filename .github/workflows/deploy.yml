@@ -1,0 +1,97 @@
+# GitHub Pages は 1 リポジトリ 1 サイト。main / develop のどちらが更新されても
+# サイト全体（/ と /dev/）を組み立て直して 1 回でデプロイする。
+# 片方だけをデプロイするともう片方が消えるため、この構成を変更しないこと。
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同時実行を防ぐ。進行中のデプロイはキャンセルせず順番待ちにする。
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout main (production)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main
+
+      - name: Checkout develop (staging)
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+          path: develop
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: main/.nvmrc
+          cache: npm
+          cache-dependency-path: |
+            main/package-lock.json
+            develop/package-lock.json
+
+      # ---- 本番ビルド（main → / ）----
+      - name: Install (production)
+        working-directory: main
+        run: npm ci
+
+      - name: Build (production)
+        working-directory: main
+        env:
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+          VITE_APP_ENV: production
+          VITE_SUPABASE_URL: ${{ vars.PROD_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.PROD_SUPABASE_ANON_KEY }}
+        run: npm run build
+
+      # ---- 検証ビルド（develop → /dev/ ）----
+      - name: Install (staging)
+        working-directory: develop
+        run: npm ci
+
+      - name: Build (staging)
+        working-directory: develop
+        env:
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/dev/
+          VITE_APP_ENV: development
+          VITE_SUPABASE_URL: ${{ vars.DEV_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.DEV_SUPABASE_ANON_KEY }}
+        run: npm run build
+
+      # ---- サイトの組み立て ----
+      - name: Assemble site
+        run: |
+          rm -rf site
+          mkdir -p site/dev
+          cp -r main/dist/. site/
+          cp -r develop/dist/. site/dev/
+          touch site/.nojekyll
+          ls -R site | head -50
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

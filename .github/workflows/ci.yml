@@ -1,0 +1,47 @@
+# 作業ブランチと Pull Request の検証のみ。デプロイは行わない。
+name: CI
+
+on:
+  push:
+    branches-ignore: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Test
+        run: npm run test
+
+      # Linux 上でビルドすることで、Windows では検出できない
+      # import パスの大文字小文字不一致をここで落とす。
+      - name: Build
+        env:
+          VITE_BASE_PATH: /
+          VITE_APP_ENV: development
+          VITE_SUPABASE_URL: ${{ vars.DEV_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.DEV_SUPABASE_ANON_KEY }}
+        run: npm run build
