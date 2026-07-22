@@ -31,8 +31,8 @@
 | テスト | Vitest |
 
 **ライブラリを新規追加する前に、必ず人間に確認すること。** 無断で依存を増やさない。
-
-> 雛形作成直後の `oxlint` → ESLint 置き換え手順は `docs/SETUP.md` 参照。
+雛形（`package.json` / `vite.config.ts` / `eslint.config.js` / `src/` 一式）は
+このテンプレートに既に含まれているため、`npm create vite` 等での再生成は不要。
 
 ---
 

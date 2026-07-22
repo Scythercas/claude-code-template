@@ -13,7 +13,7 @@
 
 ## 技術スタック
 
-React + TypeScript + Vite / Supabase（DB・認証） / GitHub Pages（GitHub Actions でデプロイ）
+React + TypeScript + Vite + Tailwind CSS / Supabase（DB・認証） / GitHub Pages（GitHub Actions でデプロイ）
 
 ## セットアップ
 
