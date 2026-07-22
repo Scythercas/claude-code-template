@@ -20,3 +20,9 @@
 
 # 差分ノイズを減らす
 package-lock.json -diff
+
+# Claude Code 用ファイル。リポジトリには残すが（clone すれば今まで通り読める）、
+# GitHub Release の自動生成ソースアーカイブ（zip/tar.gz）には含めない。
+CLAUDE.md      export-ignore
+.claude/**     export-ignore
+docs/SETUP.md  export-ignore
