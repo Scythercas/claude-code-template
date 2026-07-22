@@ -22,8 +22,13 @@ git config --global init.defaultBranch main
 
 ## 2. リポジトリと保護設定
 
-1. GitHub にリポジトリを作成（`main` がデフォルトブランチ）
-2. `main` から `develop` を作成して push
+1. [Scythercas/claude-code-template](https://github.com/Scythercas/claude-code-template)
+   を開き、**「Use this template」→「Create a new repository」**で新規リポジトリを作成する
+   （`main` がデフォルトブランチになる）。
+   **「Include all branches」に必ずチェックを入れる。** 付け忘れると `develop` が
+   コピーされず、`deploy.yml` が初回 push で失敗する（気づかず単体で `main` のみ作った
+   場合は、手順2で改めて `develop` を作成すること）。
+2. `develop` ブランチが存在しない場合のみ、`main` から作成して push
 3. Settings > Branches で `main` と `develop` にブランチ保護ルールを設定
    - Require a pull request before merging
    - Require status checks to pass（`CI / verify` を選択）
