@@ -17,7 +17,12 @@ React + TypeScript + Vite + Tailwind CSS / Supabase（DB・認証） / GitHub Pa
 
 ## セットアップ
 
-初回構築の手順は **[docs/SETUP.md](docs/SETUP.md)** を参照。
+このリポジトリは [claude-code-template](https://github.com/Scythercas/claude-code-template)
+の「Use this template」から作成した、雛形（`package.json` / `vite.config.ts` /
+`eslint.config.js` / `src/` 一式）を既に含む状態のプロジェクトである。
+`npm create vite` 等でのゼロからの再生成は不要で、プレースホルダの置換と
+`npm ci` だけで開発を開始できる。初回構築の詳しい手順は
+**[docs/SETUP.md](docs/SETUP.md)** を参照。
 
 ```powershell
 npm ci
