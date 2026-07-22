@@ -95,23 +95,8 @@ Settings > Secrets and variables > Actions > **Variables** タブに以下を登
 
 ## 6. ローカル環境
 
-初回のみ、雛形を作成する（`package.json` が無い場合）。
-
-```powershell
-npm create vite@latest . -- --template react-ts
-npm install
-```
-
-> `npm create vite@latest` は既定で Lint に `oxlint` を使う。本プロジェクトは
-> ESLint + Prettier（CLAUDE.md §1）を採用するため、直後に置き換える。
->
-> ```powershell
-> npm uninstall oxlint
-> npm install -D eslint @eslint/js typescript-eslint eslint-plugin-react-hooks `
->   eslint-plugin-react-refresh globals eslint-config-prettier prettier
-> ```
-
-2回目以降（`package.json` が既にある場合）は依存を再現インストールする。
+雛形（`package.json` / `vite.config.ts` / `eslint.config.js` / `src/` 一式）は
+このテンプレートに既に含まれている。依存関係を再現インストールするだけでよい。
 
 ```powershell
 npm ci
@@ -129,18 +114,9 @@ npm run dev
 
 ## 7. Vite の設定
 
-`vite.config.ts`:
-
-```ts
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-
-export default defineConfig({
-  // GitHub Pages のサブパス公開に必須。これが無いとアセットが全て 404 になる。
-  base: process.env.VITE_BASE_PATH ?? '/',
-  plugins: [react()],
-});
-```
+`vite.config.ts` は設定済み。`base` を環境変数 `VITE_BASE_PATH` から与えている
+（GitHub Pages のサブパス公開に必須。これが無いとアセットが全て 404 になる）。
+変更する場合を除き、このファイルは触らなくてよい。
 
 > 本番/検証ビルドをローカルで再現するために `VITE_BASE_PATH` を手動指定する場合は
 > **PowerShell を使うこと。** Git Bash では MSYS2 のパス自動変換により
@@ -152,40 +128,18 @@ export default defineConfig({
 
 ## 8. Supabase クライアントの初期化
 
-`src/lib/supabase.ts`:
-
-```ts
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from '../types/database';
-
-const env = import.meta.env.VITE_APP_ENV ?? 'development';
-
-export const supabase = createClient<Database>(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
-  {
-    auth: {
-      // 本番(/)と検証(/dev/)は同一オリジンのため localStorage を共有する。
-      // storageKey を分けないとセッションが相互に上書きされる。
-      storageKey: `sb-${env}-auth`,
-      persistSession: true,
-      autoRefreshToken: true,
-    },
-  },
-);
-```
+`src/lib/supabase.ts` は設定済み。`auth.storageKey` を環境ごとに変えている点だけ
+把握しておくこと（理由は CLAUDE.md §7）。`supabase gen types typescript` を実行したら、
+`src/types/database.ts` の中身（現状は空のプレースホルダ型）を生成結果で置き換える。
 
 ---
 
 ## 9. ルーティング
 
-GitHub Pages は SPA のパスを解決できないため **HashRouter** を使う。
-
-```tsx
-import { createHashRouter, RouterProvider } from 'react-router-dom';
-```
-
-`BrowserRouter` を使うと `/<repo>/some/path` の直接アクセスとリロードが 404 になる。
+`src/App.tsx` は `createHashRouter` を使う設定済み。ページを追加する場合は
+このルーター定義に `path` を足していく。**`BrowserRouter` に変更しないこと。**
+GitHub Pages は SPA のパスを解決できず、`/<repo>/some/path` の直接アクセスと
+リロードが 404 になる。
 
 ---
 
