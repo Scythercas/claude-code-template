@@ -95,6 +95,24 @@ Settings > Secrets and variables > Actions > **Variables** タブに以下を登
 
 ## 6. ローカル環境
 
+初回のみ、雛形を作成する（`package.json` が無い場合）。
+
+```powershell
+npm create vite@latest . -- --template react-ts
+npm install
+```
+
+> `npm create vite@latest` は既定で Lint に `oxlint` を使う。本プロジェクトは
+> ESLint + Prettier（CLAUDE.md §1）を採用するため、直後に置き換える。
+>
+> ```powershell
+> npm uninstall oxlint
+> npm install -D eslint @eslint/js typescript-eslint eslint-plugin-react-hooks `
+>   eslint-plugin-react-refresh globals eslint-config-prettier prettier
+> ```
+
+2回目以降（`package.json` が既にある場合）は依存を再現インストールする。
+
 ```powershell
 npm ci
 Copy-Item .env.example .env.local
