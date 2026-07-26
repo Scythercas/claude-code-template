@@ -178,7 +178,8 @@ npm ci
 Copy-Item .env.example .env.local
 ```
 
-`.env.local` に検証用プロジェクトの値を記入する。`.env.local` は `.gitignore` 済み。
+`.env.local` に検証環境の値を記入する（4-A: 唯一のプロジェクト / 4-B: `develop` の
+persistent branch）。`.env.local` は `.gitignore` 済み。
 
 ```powershell
 supabase start        # ローカル DB を起動（Docker Desktop が必要）
