@@ -11,15 +11,17 @@ description: Supabase のデータベーススキーマを変更する手順。�
 
 ## 環境構成
 
-| 環境 | 実体 | 用途 |
-|---|---|---|
-| Local | `supabase start`（Docker Desktop 必須） | 日常の開発・マイグレーション試行 |
-| Staging | 検証用 Supabase プロジェクト | develop / `/dev/` が参照 |
-| Production | 本番用 Supabase プロジェクト | main / `/` が参照 |
+| 環境 | 実体（Free プラン） | 実体（Pro プラン以上・Branching） | 用途 |
+|---|---|---|---|
+| Local | `supabase start`（Docker Desktop 必須） | 同左 | 日常の開発・マイグレーション試行 |
+| Staging | 本番と同一プロジェクトを共用 | `develop` の persistent branch | develop / `/dev/` が参照 |
+| Production | 本番用 Supabase プロジェクト | 同左（Branching の Production 相当） | main / `/` が参照 |
 
 **昇格は Local → Staging → Production の一方通行。逆流させない。**
 
-> 無料枠の都合で 1 プロジェクトしか使えない場合は §「1プロジェクト運用時」を参照。
+> Free プランの場合は §「1プロジェクト運用時」、Pro プラン以上で Branching を
+> 使う場合は §「Branching運用時」を参照。どちらを使うかは `docs/SETUP.md` §4 で
+> 決定済みのはず。
 
 ---
 
@@ -159,3 +161,22 @@ Supabase ダッシュボードでの手動設定が必要。変更したら `doc
 - `supabase db push` を実行する前に、必ず人間に「本番 DB に直接適用される」ことを
   明示して承認を取る。
 - ローカル（`supabase start`）での検証を通常より厚く行う。
+
+## Branching運用時（Pro プラン以上）
+
+GitHub Integration の **Automatic branching** が有効な場合、Staging への昇格は
+**手動の `supabase db push` を使わない。**
+
+- `feature/*` → `develop` への Pull Request を出すと、Supabase が自動で
+  preview branch を作成し、マイグレーションを適用する。ローカル検証（手順1）が
+  終わったらそのまま PR を出せばよい。
+- `develop` へマージされると、`develop` の persistent branch にも自動で
+  マイグレーションが反映される。手動での `supabase link`/`db push` は不要。
+- **Production（`main`）だけは引き続き手動昇格を維持する。**
+  `docs/SETUP.md` §4-B の指示どおり **Deploy to production はオフ**にしてある
+  前提で、手順3の `supabase link` + `supabase db push` を人間の承認を得てから
+  実行する。
+- Deploy to production を**オンにしている場合**、`main` への merge と同時に
+  本番へ自動適用される。この場合「本番適用前に人間へ確認」の実行タイミングは
+  **`develop` → `main` の Pull Request をマージする前**に移る。マージ自体が
+  本番適用の実行操作になることをレビュー担当者に周知しておくこと。

@@ -180,12 +180,15 @@ git merge --no-ff feature/user_login_form
 
 | | 本番 | 検証 |
 |---|---|---|
-| Supabase プロジェクト | 本番用 | 検証用（別プロジェクト） |
+| Supabase プロジェクト | 本番用プロジェクト（Pro+: Branching の Production 相当） | Free: 本番と同一プロジェクトを共用 / Pro+: `develop` の persistent branch |
 | 環境変数 | GitHub Actions Variables `PROD_*` | 同 `DEV_*` |
 | Auth ストレージキー | `sb-production-auth` | `sb-development-auth` |
 
 > 同一オリジンで localStorage を共有するため、`auth.storageKey` を分けないと
 > 本番と検証でセッションが衝突する。実装例は `docs/SETUP.md` §8 参照。
+> Supabase を1プロジェクト共用にするか Branching を使うかは Free/Pro プランで
+> 分岐する。手順は `docs/SETUP.md` §4、マイグレーション運用は
+> `.claude/skills/supabase-migration/SKILL.md` 参照。
 
 ---
 
