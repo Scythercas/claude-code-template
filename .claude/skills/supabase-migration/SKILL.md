@@ -11,17 +11,16 @@ description: Supabase のデータベーススキーマを変更する手順。�
 
 ## 環境構成
 
-| 環境 | 実体（Free プラン） | 実体（Pro プラン以上・Branching） | 用途 |
-|---|---|---|---|
-| Local | `supabase start`（Docker Desktop 必須） | 同左 | 日常の開発・マイグレーション試行 |
-| Staging | 本番と同一プロジェクトを共用 | `develop` の persistent branch | develop / `/dev/` が参照 |
-| Production | 本番用 Supabase プロジェクト | 同左（Branching の Production 相当） | main / `/` が参照 |
+| 環境 | 実体 | 用途 |
+|---|---|---|
+| Local | `supabase start`（Docker Desktop 必須） | 日常の開発・マイグレーション試行 |
+| Staging | 本番と同一の Supabase プロジェクトを共用 | develop / `/dev/` が参照 |
+| Production | 同一の Supabase プロジェクト | main / `/` が参照 |
 
 **昇格は Local → Staging → Production の一方通行。逆流させない。**
 
-> Free プランの場合は §「1プロジェクト運用時」、Pro プラン以上で Branching を
-> 使う場合は §「Branching運用時」を参照。どちらを使うかは `docs/SETUP.md` §4 で
-> 決定済みのはず。
+> Staging と Production は同一プロジェクトを共用する。詳細は下記「2. Staging /
+> Production へ適用」参照。
 
 ---
 
@@ -86,26 +85,28 @@ supabase db reset   # 全マイグレーションを最初から流し直す。�
 supabase gen types typescript --local > src/types/database.ts
 ```
 
-### 2. Staging へ適用
+### 2. Staging / Production へ適用
+
+Staging（`/dev/`）と Production（`/`）は同一の Supabase プロジェクトを共用して
+いるため、この適用が**そのまま本番にも反映される。** Staging 用の別プロジェクトは
+存在しない。
+
+**この操作の前に、必ず人間に「本番 DB に直接適用してよいか」を確認すること。**
 
 ```powershell
-supabase link --project-ref <STAGING_PROJECT_REF>
-supabase db push
-```
-
-`/dev/` で動作確認する。
-
-### 3. Production へ適用
-
-**この操作の前に、必ず人間に「本番へ適用してよいか」を確認すること。**
-
-```powershell
-supabase link --project-ref <PRODUCTION_PROJECT_REF>
+supabase link --project-ref <PROJECT_REF>
 supabase db push
 ```
 
 適用は**アプリのデプロイより先**。ただし旧バージョンのアプリでも動く内容に限る
 （詳細は `.claude/skills/release/SKILL.md` の「DB を伴うリリース」）。
+適用後、`/dev/` で動作確認してから `main` へのマージ・デプロイに進む。
+
+> **破壊的変更（下記）は `develop` からの日常運用で不用意に流さない。**
+> 本番リリースのタイミングに合わせて実施する。
+> 検証で作るデータはテスト専用アカウントに限定し、RLS で本番データと分離する。
+> 同一プロジェクトを共用するため、ローカル（`supabase start`）での検証を
+> 通常より厚く行うこと。
 
 ---
 
@@ -149,34 +150,3 @@ Supabase ダッシュボードでの手動設定が必要。変更したら `doc
   - `https://<user>.github.io/<repo>/`
   - `https://<user>.github.io/<repo>/dev/`
 - ローカル開発用に `http://localhost:5173/` も登録
-
----
-
-## 1プロジェクト運用時（無料枠の制約がある場合）
-
-検証環境も本番 Supabase プロジェクトを参照する妥協構成。以下を厳守する。
-
-- **破壊的変更を develop から流さない。** 本番リリース時にのみ実施。
-- 検証で作るデータはテスト専用アカウントに限定し、RLS で本番データと分離する。
-- `supabase db push` を実行する前に、必ず人間に「本番 DB に直接適用される」ことを
-  明示して承認を取る。
-- ローカル（`supabase start`）での検証を通常より厚く行う。
-
-## Branching運用時（Pro プラン以上）
-
-GitHub Integration の **Automatic branching** が有効な場合、Staging への昇格は
-**手動の `supabase db push` を使わない。**
-
-- `feature/*` → `develop` への Pull Request を出すと、Supabase が自動で
-  preview branch を作成し、マイグレーションを適用する。ローカル検証（手順1）が
-  終わったらそのまま PR を出せばよい。
-- `develop` へマージされると、`develop` の persistent branch にも自動で
-  マイグレーションが反映される。手動での `supabase link`/`db push` は不要。
-- **Production（`main`）だけは引き続き手動昇格を維持する。**
-  `docs/SETUP.md` §4-B の指示どおり **Deploy to production はオフ**にしてある
-  前提で、手順3の `supabase link` + `supabase db push` を人間の承認を得てから
-  実行する。
-- Deploy to production を**オンにしている場合**、`main` への merge と同時に
-  本番へ自動適用される。この場合「本番適用前に人間へ確認」の実行タイミングは
-  **`develop` → `main` の Pull Request をマージする前**に移る。マージ自体が
-  本番適用の実行操作になることをレビュー担当者に周知しておくこと。

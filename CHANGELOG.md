@@ -15,6 +15,11 @@
 
 ### Changed
 
+- Supabase の環境構成を、本番・検証を1プロジェクトで共用する構成のみに一本化。
+  Pro プラン以上向けの Branching 対応（`docs/SETUP.md` §4-B、
+  `.claude/skills/supabase-migration/SKILL.md` の「Branching運用時」）を廃止し、
+  `CLAUDE.md` §7 の Free/Pro 分岐表も1構成に整理。
+
 ### Fixed
 
 ---
